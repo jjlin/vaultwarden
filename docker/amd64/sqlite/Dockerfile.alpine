@@ -75,6 +75,7 @@ ENV SSL_CERT_DIR=/etc/ssl/certs
 RUN apk add --no-cache \
         openssl \
         curl \
+        libcap \
         sqlite \
         ca-certificates
 
@@ -88,6 +89,10 @@ EXPOSE 3012
 COPY Rocket.toml .
 COPY --from=vault /web-vault ./web-vault
 COPY --from=build /app/target/x86_64-unknown-linux-musl/release/bitwarden_rs .
+
+# Add the CAP_NET_BIND_SERVICE capability so bitwarden_rs can listen
+# on privileged (< 1024) ports even when running as a non-root user.
+RUN setcap cap_net_bind_service=+ep /bitwarden_rs
 
 COPY docker/healthcheck.sh /healthcheck.sh
 

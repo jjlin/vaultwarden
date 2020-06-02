@@ -109,18 +109,6 @@ RUN apt-get update \
 ENV CARGO_HOME "/root/.cargo"
 ENV USER "root"
 
-{% elif "armv6" in target_file %}
-RUN apt-get update \
-    && apt-get install -y \
-        --no-install-recommends \
-        gcc-arm-linux-gnueabihf \
-    && mkdir -p ~/.cargo \
-    && echo '[target.armv7-unknown-linux-gnueabihf]' >> ~/.cargo/config \
-    && echo 'linker = "arm-linux-gnueabihf-gcc"' >> ~/.cargo/config
-
-ENV CARGO_HOME "/root/.cargo"
-ENV USER "root"
-
 {% elif "armv7" in target_file %}
 RUN apt-get update \
     && apt-get install -y \
@@ -237,6 +225,7 @@ RUN [ "cross-build-start" ]
 RUN apk add --no-cache \
         openssl \
         curl \
+        libcap \
 {%   if "sqlite" in target_file %}
         sqlite \
 {%   elif "mysql" in target_file %}
@@ -251,6 +240,7 @@ RUN apt-get update && apt-get install -y \
     openssl \
     ca-certificates \
     curl \
+    libcap2-bin \
 {%   if "sqlite" in target_file %}
     sqlite3 \
 {%   elif "mysql" in target_file %}
@@ -286,6 +276,10 @@ COPY --from=build /app/target/armv7-unknown-linux-gnueabihf/release/bitwarden_rs
 {% else %}
 COPY --from=build app/target/release/bitwarden_rs .
 {% endif %}
+
+# Add the CAP_NET_BIND_SERVICE capability so bitwarden_rs can listen
+# on privileged (< 1024) ports even when running as a non-root user.
+RUN setcap cap_net_bind_service=+ep /bitwarden_rs
 
 COPY docker/healthcheck.sh /healthcheck.sh
 

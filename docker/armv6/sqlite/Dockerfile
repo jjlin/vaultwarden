@@ -101,6 +101,7 @@ RUN apt-get update && apt-get install -y \
     openssl \
     ca-certificates \
     curl \
+    libcap2-bin \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -117,6 +118,10 @@ EXPOSE 3012
 COPY Rocket.toml .
 COPY --from=vault /web-vault ./web-vault
 COPY --from=build /app/target/arm-unknown-linux-gnueabi/release/bitwarden_rs .
+
+# Add the CAP_NET_BIND_SERVICE capability so bitwarden_rs can listen
+# on privileged (< 1024) ports even when running as a non-root user.
+RUN setcap cap_net_bind_service=+ep /bitwarden_rs
 
 COPY docker/healthcheck.sh /healthcheck.sh
 
