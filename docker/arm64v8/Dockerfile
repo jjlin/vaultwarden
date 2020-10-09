@@ -1,20 +1,20 @@
 # This file was generated using a Jinja2 template.
-# Please make your changes in `Dockerfile.j2` and then `make` the individual Dockerfile's.
+# Please make your changes in `Dockerfile.j2` and then `make` the individual Dockerfiles.
 
 # Using multistage build:
 # 	https://docs.docker.com/develop/develop-images/multistage-build/
 # 	https://whitfin.io/speeding-up-rust-docker-builds/
 ####################### VAULT BUILD IMAGE  #######################
-
-#  This hash is extracted from the docker web-vault builds and it's preferred over a simple tag because it's immutable.
-#  It can be viewed in multiple ways:
-#  - From the https://hub.docker.com/repository/docker/bitwardenrs/web-vault/tags page, click the tag name and the digest should be there.
-#  - From the console, with the following commands:
-#      docker pull bitwardenrs/web-vault:v2.16.1
-#      docker image inspect --format "{{.RepoDigests}}" bitwardenrs/web-vault:v2.16.1
+# This hash is extracted from the docker web-vault builds, and is preferred over simple tag because it's immutable.
+# It can be viewed in multiple ways:
+# - From https://hub.docker.com/repository/docker/bitwardenrs/web-vault/tags,
+    click the tag name and the digest should be there.
+# - From the console, with the following commands:
+#     docker pull bitwardenrs/web-vault:v2.16.1
+#     docker image inspect --format "{{.RepoDigests}}" bitwardenrs/web-vault:v2.16.1
 #
-#  - To do the opposite, and get the tag from the hash, you can do:
-#      docker image inspect --format "{{.RepoTags}}" bitwardenrs/web-vault@sha256:e40228f94cead5e50af6575fb39850a002dad146dab6836e5da5663e6d214303
+# - To do the opposite, and get the tag from the hash, you can do:
+#     docker image inspect --format "{{.RepoTags}}" bitwardenrs/web-vault@sha256:e40228f94cead5e50af6575fb39850a002dad146dab6836e5da5663e6d214303
 FROM bitwardenrs/web-vault@sha256:e40228f94cead5e50af6575fb39850a002dad146dab6836e5da5663e6d214303 as vault
 
 ########################## BUILD IMAGE  ##########################
@@ -68,7 +68,8 @@ COPY ./build.rs ./build.rs
 # NOTE: This should be the last apt-get/dpkg for this stage, since after this it will fail because of broken dependencies.
 # For Diesel-RS migrations_macros to compile with MySQL/MariaDB we need to do some magic.
 # We at least need libmariadb3:amd64 installed for the x86_64 version of libmariadb.so (client)
-# We also need the libmariadb-dev-compat:amd64 but it can not be installed together with the :arm64 version.
+# We also need the libmariadb-dev-compat:amd64 but it can not be installed together with the
+# :arm64 version.
 # What we can do is a force install, because nothing important is overlapping each other.
 RUN apt-get install -y libmariadb3:amd64 && \
     mkdir -pv /tmp/dpkg && \
@@ -78,8 +79,8 @@ RUN apt-get install -y libmariadb3:amd64 && \
     rm -rf /tmp/dpkg
 
 # For Diesel-RS migrations_macros to compile with PostgreSQL we need to do some magic.
-# The libpq5:arm64 package seems to not provide a symlink to libpq.so.5 with the name libpq.so.
-# This is only provided by the libpq-dev package which can't be installed for both arch at the same time.
+# libpq5:arm64 doesn't provide a symlink to libpq.so.5 with the name libpq.so;
+# this symlink is provided by libpq-dev, but it can't be installed for both arches at the same time.
 # Without this specific file the ld command will fail and compilation fails with it.
 RUN ln -sfnr /usr/lib/aarch64-linux-gnu/libpq.so.5 /usr/lib/aarch64-linux-gnu/libpq.so
 

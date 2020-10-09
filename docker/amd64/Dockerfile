@@ -1,20 +1,20 @@
 # This file was generated using a Jinja2 template.
-# Please make your changes in `Dockerfile.j2` and then `make` the individual Dockerfile's.
+# Please make your changes in `Dockerfile.j2` and then `make` the individual Dockerfiles.
 
 # Using multistage build:
 # 	https://docs.docker.com/develop/develop-images/multistage-build/
 # 	https://whitfin.io/speeding-up-rust-docker-builds/
 ####################### VAULT BUILD IMAGE  #######################
-
-#  This hash is extracted from the docker web-vault builds and it's preferred over a simple tag because it's immutable.
-#  It can be viewed in multiple ways:
-#  - From the https://hub.docker.com/repository/docker/bitwardenrs/web-vault/tags page, click the tag name and the digest should be there.
-#  - From the console, with the following commands:
-#      docker pull bitwardenrs/web-vault:v2.16.1
-#      docker image inspect --format "{{.RepoDigests}}" bitwardenrs/web-vault:v2.16.1
+# This hash is extracted from the docker web-vault builds, and is preferred over simple tag because it's immutable.
+# It can be viewed in multiple ways:
+# - From https://hub.docker.com/repository/docker/bitwardenrs/web-vault/tags,
+    click the tag name and the digest should be there.
+# - From the console, with the following commands:
+#     docker pull bitwardenrs/web-vault:v2.16.1
+#     docker image inspect --format "{{.RepoDigests}}" bitwardenrs/web-vault:v2.16.1
 #
-#  - To do the opposite, and get the tag from the hash, you can do:
-#      docker image inspect --format "{{.RepoTags}}" bitwardenrs/web-vault@sha256:e40228f94cead5e50af6575fb39850a002dad146dab6836e5da5663e6d214303
+# - To do the opposite, and get the tag from the hash, you can do:
+#     docker image inspect --format "{{.RepoTags}}" bitwardenrs/web-vault@sha256:e40228f94cead5e50af6575fb39850a002dad146dab6836e5da5663e6d214303
 FROM bitwardenrs/web-vault@sha256:e40228f94cead5e50af6575fb39850a002dad146dab6836e5da5663e6d214303 as vault
 
 ########################## BUILD IMAGE  ##########################
