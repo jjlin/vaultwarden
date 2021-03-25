@@ -370,6 +370,9 @@ make_config! {
 
         /// Invitation organization name |> Name shown in the invitation emails that don't come from a specific organization
         invitation_org_name:    String, true,   def,    "Bitwarden_RS".to_string();
+
+        /// Send purge schedule |> foo
+        send_purge_schedule:    String, true,   def,    "0 1/5 * * * *".to_string();
     },
 
     /// Advanced settings

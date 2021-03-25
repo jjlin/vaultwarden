@@ -2,6 +2,7 @@
 #![cfg_attr(feature = "unstable", feature(ip))]
 #![recursion_limit = "512"]
 
+extern crate job_scheduler;
 extern crate openssl;
 #[macro_use]
 extern crate rocket;
@@ -16,6 +17,7 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
+use job_scheduler::{JobScheduler, Job};
 use std::{
     fs::create_dir_all,
     panic,
@@ -23,6 +25,7 @@ use std::{
     process::{exit, Command},
     str::FromStr,
     thread,
+    time::Duration,
 };
 
 #[macro_use]
@@ -59,7 +62,9 @@ fn main() {
 
     create_icon_cache_folder();
 
-    launch_rocket(extra_debug);
+    let pool = create_db_pool();
+    launch_rocket(pool.clone(), extra_debug);
+    schedule_jobs(pool.clone());
 }
 
 const HELP: &str = "\
@@ -304,7 +309,7 @@ fn check_web_vault() {
     }
 }
 
-fn launch_rocket(extra_debug: bool) {
+fn create_db_pool() -> db::DbPool {
     let pool = match util::retry_db(db::DbPool::from_config, CONFIG.db_connection_retries()) {
         Ok(p) => p,
         Err(e) => {
@@ -313,8 +318,10 @@ fn launch_rocket(extra_debug: bool) {
         }
     };
 
-    api::start_send_deletion_scheduler(pool.clone());
+    pool
+}
 
+fn launch_rocket(pool: db::DbPool, extra_debug: bool) {
     let basepath = &CONFIG.domain_path();
 
     // If adding more paths here, consider also adding them to
@@ -336,4 +343,23 @@ fn launch_rocket(extra_debug: bool) {
     // Launch and print error if there is one
     // The launch will restore the original logging level
     error!("Launch error {:#?}", result);
+}
+
+fn schedule_jobs(pool: db::DbPool) {
+    thread::Builder::new().name("scheduled_jobs".to_string()).spawn(move || {
+        let mut sched = JobScheduler::new();
+
+        // Purge sends that are past their deletion date (every 5 minutes).
+        sched.add(Job::new(CONFIG.send_purge_schedule().parse().unwrap(), || {
+            api::purge_sends(pool.clone());
+        }));
+
+        // Periodically check for jobs to run. We probably won't need any
+        // jobs that run more often than once a minute, so checking every 30
+        // seconds should be fine.
+        loop {
+            sched.tick();
+            thread::sleep(Duration::from_secs(30));
+        }
+    }).expect("Error spawning thread for scheduled jobs");
 }
