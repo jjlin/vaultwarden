@@ -2,7 +2,6 @@
 #![cfg_attr(feature = "unstable", feature(ip))]
 #![recursion_limit = "512"]
 
-extern crate job_scheduler;
 extern crate openssl;
 #[macro_use]
 extern crate rocket;
@@ -17,7 +16,7 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
-use job_scheduler::{JobScheduler, Job};
+use clokwerk::{Scheduler, TimeUnits};
 use std::{
     fs::create_dir_all,
     panic,
@@ -40,6 +39,7 @@ mod mail;
 mod util;
 
 pub use config::CONFIG;
+pub use db::DB_POOL;
 pub use error::{Error, MapResult};
 pub use util::is_running_in_docker;
 
@@ -62,9 +62,11 @@ fn main() {
 
     create_icon_cache_folder();
 
-    let pool = create_db_pool();
-    launch_rocket(pool.clone(), extra_debug);
-    schedule_jobs(pool.clone());
+    // let pool = create_db_pool();
+    // launch_rocket(pool.clone(), extra_debug);
+    // schedule_jobs(pool.clone());
+    schedule_jobs();
+    launch_rocket(extra_debug); // Blocks until program termination.
 }
 
 const HELP: &str = "\
@@ -321,7 +323,8 @@ fn create_db_pool() -> db::DbPool {
     pool
 }
 
-fn launch_rocket(pool: db::DbPool, extra_debug: bool) {
+//fn launch_rocket(pool: db::DbPool, extra_debug: bool) {
+fn launch_rocket(extra_debug: bool) {
     let basepath = &CONFIG.domain_path();
 
     // If adding more paths here, consider also adding them to
@@ -333,7 +336,7 @@ fn launch_rocket(pool: db::DbPool, extra_debug: bool) {
         .mount(&[basepath, "/identity"].concat(), api::identity_routes())
         .mount(&[basepath, "/icons"].concat(), api::icons_routes())
         .mount(&[basepath, "/notifications"].concat(), api::notifications_routes())
-        .manage(pool)
+        .manage(DB_POOL)
         .manage(api::start_notification_server())
         .attach(util::AppHeaders())
         .attach(util::CORS())
@@ -345,20 +348,24 @@ fn launch_rocket(pool: db::DbPool, extra_debug: bool) {
     error!("Launch error {:#?}", result);
 }
 
-fn schedule_jobs(pool: db::DbPool) {
-    thread::Builder::new().name("scheduled_jobs".to_string()).spawn(move || {
-        let mut sched = JobScheduler::new();
+//fn schedule_jobs(pool: db::DbPool) {
+fn schedule_jobs() {
+    thread::Builder::new().name("job-scheduler".to_string()).spawn(move || {
+        // Create a new scheduler in the local time zone.
+        let mut sched = Scheduler::with_tz(chrono::Local);
 
-        // Purge sends that are past their deletion date (every 5 minutes).
-        sched.add(Job::new(CONFIG.send_purge_schedule().parse().unwrap(), || {
-            api::purge_sends(pool.clone());
-        }));
+        // Purge sends that are past their deletion date.
+        //let p = pool.clone();
+        sched.every(CONFIG.send_purge_interval().minutes()).run(|| api::purge_sends());
+
+        // Purge trashed items that are old enough to be auto-deleted.
+        //sched.every(CONFIG.trash_purge_interval().minutes()).run(|| api::purge_sends(pool.clone()));
 
         // Periodically check for jobs to run. We probably won't need any
-        // jobs that run more often than once a minute, so checking every 30
-        // seconds should be fine.
+        // jobs that run more often than once a minute, so polling at a 30
+        // second interval should be sufficient.
         loop {
-            sched.tick();
+            sched.run_pending();
             thread::sleep(Duration::from_secs(30));
         }
     }).expect("Error spawning thread for scheduled jobs");

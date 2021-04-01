@@ -1,4 +1,5 @@
 use std::process::Command;
+use std::process::exit;
 
 use chrono::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
@@ -7,11 +8,31 @@ use rocket::{
     request::{FromRequest, Outcome},
     Request, State,
 };
+use once_cell::sync::Lazy;
 
 use crate::{
     error::{Error, MapResult},
+    util,
     CONFIG,
 };
+
+pub static DB_POOL: Lazy<DbPool> = Lazy::new(|| {
+    let pool = match util::retry_db(DbPool::from_config, CONFIG.db_connection_retries()) {
+        Ok(p) => p,
+        Err(e) => {
+            error!("Error creating database pool: {:?}", e);
+            exit(1);
+        }
+    };
+
+    pool
+
+    
+    // Config::load().unwrap_or_else(|e| {
+    //     println!("Error loading config:\n\t{:?}\n", e);
+    //     exit(12)
+    // })
+});
 
 #[cfg(sqlite)]
 #[path = "schemas/sqlite/schema.rs"]

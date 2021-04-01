@@ -9,7 +9,7 @@ use serde_json::Value;
 use crate::{
     api::{ApiResult, EmptyResult, JsonResult, JsonUpcase, Notify, UpdateType},
     auth::{Headers, Host},
-    db::{models::*, DbConn, DbPool},
+    db::{models::*, DbConn, DbPool, DB_POOL},
     CONFIG,
 };
 
@@ -25,8 +25,9 @@ pub fn routes() -> Vec<rocket::Route> {
     ]
 }
 
-pub fn purge_sends(pool: DbPool) {
-    if let Ok(conn) = pool.get() {
+//pub fn purge_sends(pool: DbPool) {
+pub fn purge_sends() {
+    if let Ok(conn) = DB_POOL.get() {
         Send::purge(&conn);
     } else {
         error!("Failed to get DB connection while purging sends")

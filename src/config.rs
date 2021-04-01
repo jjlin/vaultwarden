@@ -339,6 +339,11 @@ make_config! {
         /// Per-organization attachment limit (KB) |> Limit in kilobytes for an organization attachments, once the limit is exceeded it won't be possible to upload more
         org_attachment_limit:   i64,    true,   option;
 
+        /// Trash auto-delete days |> Number of days to wait before auto-deleting a trashed item.
+        /// If unset, trashed items are not auto-deleted. This setting applies globally, so make sure
+        /// to inform all users of any changes to this setting.
+        trash_auto_delete_days: u32,    true,   option;
+
         /// Disable icon downloads |> Set to true to disable icon downloading, this would still serve icons from
         /// $ICON_CACHE_FOLDER, but it won't produce any external network request. Needs to set $ICON_CACHE_TTL to 0,
         /// otherwise it will delete them and they won't be downloaded again.
@@ -370,9 +375,6 @@ make_config! {
 
         /// Invitation organization name |> Name shown in the invitation emails that don't come from a specific organization
         invitation_org_name:    String, true,   def,    "Bitwarden_RS".to_string();
-
-        /// Send purge schedule |> foo
-        send_purge_schedule:    String, true,   def,    "0 1/5 * * * *".to_string();
     },
 
     /// Advanced settings
@@ -433,6 +435,17 @@ make_config! {
 
         /// Allowed iframe ancestors (Know the risks!) |> Allows other domains to embed the web vault into an iframe, useful for embedding into secure intranets
         allowed_iframe_ancestors: String, true, def,    String::new();
+    },
+
+    /// Job scheduler settings
+    jobs {
+        /// Send purge interval |> How often (in minutes) to check for Sends past their deletion date.
+        /// Set to 0 to disable this job.
+        send_purge_interval:    u32,    false,   def,    60;
+
+        /// Trash purge interval |> How often (in minutes) to check for trashed items to delete permanently.
+        /// Set to 0 to disable this job.
+        trash_purge_interval:   u32,    false,   def,    1440;
     },
 
     /// Yubikey settings

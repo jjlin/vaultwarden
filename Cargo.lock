@@ -123,6 +123,7 @@ dependencies = [
  "chashmap",
  "chrono",
  "chrono-tz",
+ "clokwerk",
  "data-encoding",
  "data-url",
  "diesel",
@@ -132,7 +133,6 @@ dependencies = [
  "handlebars",
  "html5ever",
  "idna 0.2.2",
- "job_scheduler",
  "jsonwebtoken",
  "lettre",
  "libsqlite3-sys",
@@ -298,6 +298,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "clokwerk"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f9797a6d3acefa28d4cc62bf548b6ddc57b8ae51a43702d001cb46fba1dc48c1"
+dependencies = [
+ "chrono",
+]
+
+[[package]]
 name = "const_fn"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -341,17 +350,6 @@ name = "cpuid-bool"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8aebca1129a03dc6dc2b127edd729435bbc4a37e1d5f4d7513165089ceb02634"
-
-[[package]]
-name = "cron"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab00a636277f7ea5d8dd92ac7a5099fc9a46e5327bba84d3640b41ae127eada9"
-dependencies = [
- "chrono",
- "error-chain 0.10.0",
- "nom 4.1.1",
-]
 
 [[package]]
 name = "crypto-mac"
@@ -510,15 +508,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "80df024fbc5ac80f87dfef0d9f5209a252f2a497f7f42944cff24d8253cac065"
 dependencies = [
  "cfg-if 1.0.0",
-]
-
-[[package]]
-name = "error-chain"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9435d864e017c3c6afeac1654189b06cdb491cf2ff73dbf0d73b0f292f42ff8"
-dependencies = [
- "backtrace",
 ]
 
 [[package]]
@@ -1047,17 +1036,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 
 [[package]]
-name = "job_scheduler"
-version = "1.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51f368c9c76dde2282714ae32dc274b79c27527a0c06c816f6dda048904d0d7c"
-dependencies = [
- "chrono",
- "cron",
- "uuid",
-]
-
-[[package]]
 name = "js-sys"
 version = "0.3.49"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1120,7 +1098,7 @@ dependencies = [
  "idna 0.2.2",
  "mime 0.3.16",
  "native-tls",
- "nom 6.1.2",
+ "nom",
  "once_cell",
  "quoted_printable",
  "rand 0.8.3",
@@ -1435,15 +1413,6 @@ name = "nodrop"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72ef4a56884ca558e5ddb05a1d1e7e1bfd9a68d9ed024c21704cc98872dae1bb"
-
-[[package]]
-name = "nom"
-version = "4.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c349f68f25f596b9f44cf0e7c69752a5c633b0550c3ff849518bfba0233774a"
-dependencies = [
- "memchr",
-]
 
 [[package]]
 name = "nom"
@@ -2668,7 +2637,7 @@ version = "4.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a0641142b4081d3d44beffa4eefd7346a228cdf91ed70186db2ca2cef762d327"
 dependencies = [
- "error-chain 0.11.0",
+ "error-chain",
  "libc",
  "log 0.4.14",
  "time 0.1.44",
