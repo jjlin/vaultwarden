@@ -73,8 +73,8 @@ chrono = { version = "0.4.19", features = ["serde"] }
 chrono-tz = "0.5.3"
 time = "0.2.26"
 
-# Cron-like job scheduler
-job_scheduler = "1.2.1"
+# Job scheduler
+clokwerk = "0.3.4"
 
 # TOTP library
 oath = "0.10.2"
@@ -138,3 +138,5 @@ rocket_contrib = { git = 'https://github.com/SergioBenitez/Rocket', rev = '263e3
 
 # For favicon extraction from main website
 data-url = { git = 'https://github.com/servo/rust-url', package="data-url", rev = '540ede02d0771824c0c80ff9f57fe8eff38b1291' }
+
+#clokwerk = { path = '/tmp/clokwerk' }
