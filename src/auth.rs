@@ -152,10 +152,10 @@ pub fn generate_invite_claims(
     user_org_id: Option<String>,
     invited_by_email: Option<String>,
 ) -> InviteJwtClaims {
-    let time_now = Utc::now().naive_utc();
+    let now = Utc::now().naive_utc();
     InviteJwtClaims {
-        nbf: time_now.timestamp(),
-        exp: (time_now + Duration::days(5)).timestamp(),
+        nbf: now.timestamp(),
+        exp: (now + Duration::days(5)).timestamp(),
         iss: JWT_INVITE_ISSUER.to_string(),
         sub: uuid,
         email,
@@ -165,7 +165,6 @@ pub fn generate_invite_claims(
     }
 }
 
-//           var token = _dataProtector.Protect($"EmergencyAccessInvite {emergencyAccess.Id} {emergencyAccess.Email} {nowMillis}");
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EmergencyAccessInviteJwtClaims {
     // Not before
@@ -190,10 +189,10 @@ pub fn generate_emergency_access_invite_claims(
     grantor_name: Option<String>,
     grantor_email: Option<String>,
 ) -> EmergencyAccessInviteJwtClaims {
-    let time_now = Utc::now().naive_utc();
+    let now = Utc::now().naive_utc();
     EmergencyAccessInviteJwtClaims {
-        nbf: time_now.timestamp(),
-        exp: (time_now + Duration::days(5)).timestamp(),
+        nbf: now.timestamp(),
+        exp: (now + Duration::days(5)).timestamp(),
         iss: JWT_EMERGENCY_ACCESS_INVITE_ISSUER.to_string(),
         sub: uuid,
         email,
@@ -216,40 +215,40 @@ pub struct BasicJwtClaims {
 }
 
 pub fn generate_delete_claims(uuid: String) -> BasicJwtClaims {
-    let time_now = Utc::now().naive_utc();
+    let now = Utc::now().naive_utc();
     BasicJwtClaims {
-        nbf: time_now.timestamp(),
-        exp: (time_now + Duration::days(5)).timestamp(),
+        nbf: now.timestamp(),
+        exp: (now + Duration::days(5)).timestamp(),
         iss: JWT_DELETE_ISSUER.to_string(),
         sub: uuid,
     }
 }
 
 pub fn generate_verify_email_claims(uuid: String) -> BasicJwtClaims {
-    let time_now = Utc::now().naive_utc();
+    let now = Utc::now().naive_utc();
     BasicJwtClaims {
-        nbf: time_now.timestamp(),
-        exp: (time_now + Duration::days(5)).timestamp(),
+        nbf: now.timestamp(),
+        exp: (now + Duration::days(5)).timestamp(),
         iss: JWT_VERIFYEMAIL_ISSUER.to_string(),
         sub: uuid,
     }
 }
 
 pub fn generate_admin_claims() -> BasicJwtClaims {
-    let time_now = Utc::now().naive_utc();
+    let now = Utc::now().naive_utc();
     BasicJwtClaims {
-        nbf: time_now.timestamp(),
-        exp: (time_now + Duration::minutes(20)).timestamp(),
+        nbf: now.timestamp(),
+        exp: (now + Duration::minutes(20)).timestamp(),
         iss: JWT_ADMIN_ISSUER.to_string(),
         sub: "admin_panel".to_string(),
     }
 }
 
 pub fn generate_send_claims(send_id: &str, file_id: &str) -> BasicJwtClaims {
-    let time_now = Utc::now().naive_utc();
+    let now = Utc::now().naive_utc();
     BasicJwtClaims {
-        nbf: time_now.timestamp(),
-        exp: (time_now + Duration::minutes(2)).timestamp(),
+        nbf: now.timestamp(),
+        exp: (now + Duration::minutes(2)).timestamp(),
         iss: JWT_SEND_ISSUER.to_string(),
         sub: format!("{}/{}", send_id, file_id),
     }

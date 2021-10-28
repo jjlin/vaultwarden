@@ -74,7 +74,7 @@ impl EmergencyAccess {
     }
 
     pub fn to_json_grantor_details(&self, conn: &DbConn) -> Value {
-        let grantor_user = User::find_by_uuid(&self.grantor_uuid, conn).expect("Grantor user not found.");
+        let grantor_user = User::find_by_uuid(&self.grantor_uuid, conn).expect("Grantor user not found");
 
         json!({
             "Id": self.uuid,
@@ -91,9 +91,9 @@ impl EmergencyAccess {
     #[allow(clippy::manual_map)]
     pub fn to_json_grantee_details(&self, conn: &DbConn) -> Value {
         let grantee_user = if let Some(grantee_uuid) = self.grantee_uuid.as_deref() {
-            Some(User::find_by_uuid(grantee_uuid, conn).expect("Grantee user not found."))
+            Some(User::find_by_uuid(grantee_uuid, conn).expect("Grantee user not found"))
         } else if let Some(email) = self.email.as_deref() {
-            Some(User::find_by_mail(email, conn).expect("Grantee user not found."))
+            Some(User::find_by_mail(email, conn).expect("Grantee user not found"))
         } else {
             None
         };
