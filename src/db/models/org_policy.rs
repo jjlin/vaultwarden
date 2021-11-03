@@ -161,6 +161,43 @@ impl OrgPolicy {
         }}
     }
 
+    // XXX
+    pub fn find_by_user_and_state(user_uuid: &str, state: &[UserOrgStatus], conn: &DbConn) -> Vec<Self> {
+        let state = state.into_iter().map(|x| x as i32).collect();
+        db_run! { conn:
+            sqlite, mysql {
+                org_policies::table
+                    .inner_join(
+                        users_organizations::table.on(
+                            users_organizations::org_uuid.eq(org_policies::org_uuid)
+                                .and(users_organizations::user_uuid.eq(user_uuid)))
+                    )
+                    .filter(
+                        users_organizations::status.eq_any(state)
+                    )
+                    .select(org_policies::all_columns)
+                    .load::<OrgPolicyDb>(conn)
+                    .expect("Error loading org_policy")
+                    .from_db()
+            }
+            postgresql {
+                org_policies::table
+                    .inner_join(
+                        users_organizations::table.on(
+                            users_organizations::org_uuid.eq(org_policies::org_uuid)
+                                .and(users_organizations::user_uuid.eq(user_uuid)))
+                    )
+                    .filter(
+                        users_organizations::status.eq(any(UserOrgStatus::Confirmed as i32))
+                    )
+                    .select(org_policies::all_columns)
+                    .load::<OrgPolicyDb>(conn)
+                    .expect("Error loading org_policy")
+                    .from_db()
+            }
+        }
+    }
+
     pub fn find_by_org_and_type(org_uuid: &str, atype: i32, conn: &DbConn) -> Option<Self> {
         db_run! { conn: {
             org_policies::table
@@ -185,7 +222,8 @@ impl OrgPolicy {
     /// applicability of policy types that have these particular semantics.
     pub fn is_applicable_to_user(user_uuid: &str, policy_type: OrgPolicyType, conn: &DbConn) -> bool {
         // TODO: Should check confirmed and accepted users
-        for policy in OrgPolicy::find_confirmed_by_user(user_uuid, conn) {
+        let state = [UserOrgStatus::Accepted, UserOrgStatus::Confirmed];
+        for policy in OrgPolicy::find_by_user_and_state(user_uuid, &state, conn) {
             if policy.enabled && policy.has_type(policy_type) {
                 let org_uuid = &policy.org_uuid;
                 if let Some(user) = UserOrganization::find_by_user_and_org(user_uuid, org_uuid, conn) {
