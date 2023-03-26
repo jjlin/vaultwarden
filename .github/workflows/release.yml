@@ -14,33 +14,15 @@ on:
       - "rust-toolchain"
 
     branches: # Only on paths above
-      - main
+      - docker
 
     tags: # Always, regardless of paths above
       - '*'
 
 jobs:
-  # https://github.com/marketplace/actions/skip-duplicate-actions
-  # Some checks to determine if we need to continue with building a new docker.
-  # We will skip this check if we are creating a tag, because that has the same hash as a previous run already.
-  skip_check:
-    runs-on: ubuntu-20.04
-    if: ${{ github.repository == 'dani-garcia/vaultwarden' }}
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - name: Skip Duplicates Actions
-        id: skip_check
-        uses: fkirc/skip-duplicate-actions@12aca0a884f6137d619d6a8a09fcc3406ced5281 # v5.3.0
-        with:
-          cancel_others: 'true'
-        # Only run this when not creating a tag
-        if: ${{ startsWith(github.ref, 'refs/heads/') }}
-
   docker-build:
     runs-on: ubuntu-20.04
     timeout-minutes: 120
-    needs: skip_check
     # Start a local docker registry to be used to generate multi-arch images.
     services:
       registry:
@@ -65,10 +47,9 @@ jobs:
       # QUAY_REPO needs to be 'quay.io/<user>/<repo>'
       # Check for Quay.io credentials in secrets
       HAVE_QUAY_LOGIN: ${{ vars.QUAY_REPO != '' && secrets.QUAY_USERNAME != '' && secrets.QUAY_TOKEN != '' }}
-    if: ${{ needs.skip_check.outputs.should_skip != 'true' && github.repository == 'dani-garcia/vaultwarden' }}
     strategy:
       matrix:
-        base_image: ["debian","alpine"]
+        base_image: ["debian"]
 
     steps:
       # Checkout the repo
